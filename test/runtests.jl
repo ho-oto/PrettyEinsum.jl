@@ -79,7 +79,7 @@ using TensorOperations
     # [$L@1|l,r] [$h@6|p_lo_L,p_lo_R,p_up_L,p_up_R] [$R@4|l,r]
     #     l@1    p_lo_L@6            (p@5=p_lo_R@6)  (r@4=r@5)
     #                                           |        |
-    #                               l@5___[$A@'5|l,r,p]__| -> [$x@>|l@1,l@5,p_lo_L@6]
+    #                               l@5___[$A'@5|l,r,p]__| -> [$x@>|l@1,l@5,p_lo_L@6]
     contraction: {((2,6),1),((3,4),5)}
     """
     foo!(rsl4, a, l, r, H)
@@ -92,7 +92,7 @@ using TensorOperations
     # [$L@1|l,r] [$h@6|p_lo_L,p_lo_R,p_up_L,p_up_R] [$R@4|l,r]
     #     l@1    p_lo_L@6            (p@5=p_lo_R@6)  (r@4=r@5)
     #                                           |        |
-    #                               l@5___[$A@'5|l,r,p]__| -> [>|l@1,l@5,p_lo_L@6]
+    #                               l@5___[$A'@5|l,r,p]__| -> [>|l@1,l@5,p_lo_L@6]
     contraction: {((2,6),1),((3,4),5)}
     """
     rsl5 = foo(a, l, r, H)
