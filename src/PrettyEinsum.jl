@@ -1,5 +1,8 @@
 module PrettyEinsum
+using TensorOperations
 
-# Write your package code here.
+export @peinp!_str, @peinew_str, @peinp!, @peinew
+
+include("einsum.jl")
 
 end
