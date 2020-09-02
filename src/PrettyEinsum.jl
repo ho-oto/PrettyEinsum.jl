@@ -3,6 +3,8 @@ using TensorOperations
 
 export @peinp!_str, @peinew_str, @peinp!#, @peinew
 
-include("einsum.jl")
+include("parse.jl")
+include("macrostr.jl")
+include("macro.jl")
 
 end
