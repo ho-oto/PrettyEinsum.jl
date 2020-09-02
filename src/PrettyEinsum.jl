@@ -1,7 +1,7 @@
 module PrettyEinsum
 using TensorOperations
 
-export @einΣ!_str, @einΣ_str, @einΣ!#, @einΣ
+export @einΣ!_str, @einΣ_str, @einΣ!, @einΣ
 
 include("parse.jl")
 include("macrostr.jl")

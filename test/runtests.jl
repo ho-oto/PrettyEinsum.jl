@@ -68,8 +68,8 @@ using TensorOperations
     contraction: [(1,(6,2)),(5,(3,4))]
     """
     foo!(rsl4, a, l, r, H)
-#=
-    foo(A, L, R, h) = @peinew """
+
+    foo(A, L, R, h) = @einΣ """
     diagram:
     #       __[$A@2|l,r,p]____(r@2=l@3)____[$A@3|l,r,p]__
     #      |       |                            |        |
@@ -78,12 +78,13 @@ using TensorOperations
     #     l@1    p_lo_L@6            (p@5=p_lo_R@6)  (r@4=r@5)
     #                                           |        |
     #                               l@5___[$A@5*|l,r,p]__| -> [>|l@1,l@5,p_lo_L@6]
-    contraction: [((2,6),1),((3,4),5)]
+    contraction: [(1,(6,2)),(5,(3,4))]
     """
     rsl5 = foo(a, l, r, H)
-    =#
+
     # @test rsl1 == rsl2 == rsl3 == rsl4 = rsl5
     @test rsl1 == rsl2
     @test rsl1 == rsl3
     @test rsl1 == rsl4
+    @test rsl1 == rsl5
 end
