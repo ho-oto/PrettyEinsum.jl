@@ -31,7 +31,7 @@ using TensorOperations
     @test t == [[1, [6, 2]], [5, [3, 4]]]
 
     # inplace
-    peinp!"""
+    einΣ!"""
     diagram:
     #      ______[2|l,r,p]____(r@2=l@3)____[3|l,r,p]_
     #     |        |                         |       |
@@ -44,7 +44,7 @@ using TensorOperations
     """(rsl2, l, a, a, r, a, H)
 
     # allocate
-    rsl3 = peinew"""
+    rsl3 = einΣ"""
     diagram:
     #      ______[2|l,r,p]____(r@2=l@3)____[3|l,r,p]_
     #     |        |                         |       |
@@ -56,7 +56,7 @@ using TensorOperations
     contraction: [(1,(6,2)),(5,(3,4))]
     """(l, a, a, r, a, H)
 
-    foo!(x, A, L, R, h) = @peinp! """
+    foo!(x, A, L, R, h) = @einΣ! """
     diagram:
     #       __[$A@2|l,r,p]____(r@2=l@3)____[$A@3|l,r,p]__
     #      |       |                            |        |

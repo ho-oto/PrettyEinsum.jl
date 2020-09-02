@@ -1,4 +1,4 @@
-macro peinp!(ex::Expr)
+macro einΣ!(ex::Expr)
     ex.head == :string && isodd(length(ex.args)) || error("")
     s = join(ex.args[1:2:end])
     tensors_rhs = parse_tensors_rhs(s)
