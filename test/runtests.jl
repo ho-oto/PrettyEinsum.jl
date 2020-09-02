@@ -40,16 +40,8 @@ using TensorOperations
     #    l@1     p_lo_L@6         (p@5=p_lo_R@6) (r@4=r@5)
     #                                        |       |
     #                               l@5___[5*|l,r,p]_| -> [>|l@1,l@5,p_lo_L@6]
-    contraction: [((2,6),1),((3,4),5)]
-    """(
-        rsl2,
-        l,
-        a,
-        a,
-        r,
-        a,
-        H,
-    )
+    contraction: [(1,(6,2)),(5,(3,4))]
+    """(rsl2, l, a, a, r, a, H)
     #=
     # allocate
     rsl3 = peinew"""
@@ -98,5 +90,5 @@ using TensorOperations
     rsl5 = foo(a, l, r, H)
     =#
     # @test rsl1 == rsl2 == rsl3 == rsl4 = rsl5
-    @test rsl1 ≈ rsl2
+    @test rsl1 == rsl2
 end

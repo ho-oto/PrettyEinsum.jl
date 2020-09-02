@@ -27,7 +27,14 @@ macro peinp!_str(s::AbstractString)
     ex_rhs_rhs = if isnothing(tree_contract)
         Expr(:call, :(*), tensors_rhs_ex...)
     else
-        Expr(:call, :(*), tensors_rhs_ex...) #TODO: implement
+        evaltree(i, j) = Expr(
+            :call,
+            :(*),
+            i isa Int ? tensors_rhs_ex[i] : evaltree(i...),
+            j isa Int ? tensors_rhs_ex[j] : evaltree(j...),
+        )
+        evaltree(i, j, k...) = evaltree((i, j), k...)
+        evaltree(tree_contract...)
     end
     ex_rhs =
         macroexpand(TensorOperations, :(TensorOperations.@tensor $ex_rhs_lhs = $ex_rhs_rhs))
