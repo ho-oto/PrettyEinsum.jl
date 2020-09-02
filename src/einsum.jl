@@ -4,6 +4,26 @@ struct TensorInformation
 end
 
 macro peinp!_str(s::AbstractString)
+    tensor_lhs_sym, tensors_rhs_sym, ex_rhs_lhs, ex_rhs_rhs = parser(s)
+    ex_rhs = macroexpand(
+        TensorOperations,
+        :(TensorOperations.@tensor $ex_rhs_lhs = $ex_rhs_rhs),
+    )
+    ex_lhs = Expr(:tuple, tensor_lhs_sym, tensors_rhs_sym...)
+    return :($ex_lhs -> $ex_rhs)
+end
+
+macro peinew_str(s::AbstractString)
+    tensor_lhs_sym, tensors_rhs_sym, ex_rhs_lhs, ex_rhs_rhs = parser(s)
+    ex_rhs = macroexpand(
+        TensorOperations,
+        :(TensorOperations.@tensor $ex_rhs_lhs := $ex_rhs_rhs),
+    )
+    ex_lhs = Expr(:tuple, tensors_rhs_sym...)
+    return :($ex_lhs -> $ex_rhs)
+end
+
+function parser(s::AbstractString)
     tensors_rhs = parse_tensors_rhs(s)
     indices_lhs = parse_indices_lhs(s)
     pairs_index = parse_pairs_index(s)
@@ -21,9 +41,7 @@ macro peinp!_str(s::AbstractString)
         push!(tensors_rhs_ex, ex)
     end
     tensor_lhs_sym = gensym()
-    tensor_lhs_ex = Expr(:ref, tensor_lhs_sym, [indices_sym[i] for i in indices_lhs]...)
-    ex_lhs = Expr(:tuple, tensor_lhs_sym, tensors_rhs_sym...)
-    ex_rhs_lhs = tensor_lhs_ex
+    ex_rhs_lhs = Expr(:ref, tensor_lhs_sym, [indices_sym[i] for i in indices_lhs]...)
     ex_rhs_rhs = if isnothing(tree_contract)
         Expr(:call, :(*), tensors_rhs_ex...)
     else
@@ -36,9 +54,9 @@ macro peinp!_str(s::AbstractString)
         evaltree(i, j, k...) = evaltree((i, j), k...)
         evaltree(tree_contract...)
     end
-    ex_rhs =
-        macroexpand(TensorOperations, :(TensorOperations.@tensor $ex_rhs_lhs = $ex_rhs_rhs))
-    return :($ex_lhs -> $ex_rhs)
+    #    ex_lhs = Expr(:tuple, tensor_lhs_sym, tensors_rhs_sym...)
+    #    ex_rhs_lhs = tensor_lhs_ex
+    return tensor_lhs_sym, tensors_rhs_sym, ex_rhs_lhs, ex_rhs_rhs
 end
 
 function diagramparser(s::AbstractString)
