@@ -54,17 +54,7 @@ function parser(s::AbstractString)
         evaltree(i, j, k...) = evaltree((i, j), k...)
         evaltree(tree_contract...)
     end
-    #    ex_lhs = Expr(:tuple, tensor_lhs_sym, tensors_rhs_sym...)
-    #    ex_rhs_lhs = tensor_lhs_ex
     return tensor_lhs_sym, tensors_rhs_sym, ex_rhs_lhs, ex_rhs_rhs
-end
-
-function diagramparser(s::AbstractString)
-    tensors_rhs = parse_tensors_rhs(s)
-    indices_lhs = parse_indices_lhs(s)
-    pairs_index = parse_pairs_index(s)
-    tree = parse_tree_contract(s)
-    return tensors_rhs, pairs_index, tree, indices_lhs
 end
 
 function parse_tensors_rhs(s::AbstractString)
