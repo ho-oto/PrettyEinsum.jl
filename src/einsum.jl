@@ -4,17 +4,15 @@ struct TensorInformation
 end
 
 macro peinp!_str(s::AbstractString)
-    tensor_lhs_sym, tensors_rhs_sym, ex_rhs_lhs, ex_rhs_rhs = parser(s)
-    ex_rhs = macroexpand(
-        TensorOperations,
-        :(TensorOperations.@tensor $ex_rhs_lhs = $ex_rhs_rhs),
-    )
+    tensor_lhs_sym, tensors_rhs_sym, ex_rhs_lhs, ex_rhs_rhs = parser_strmac(s)
+    ex_rhs =
+        macroexpand(TensorOperations, :(TensorOperations.@tensor $ex_rhs_lhs = $ex_rhs_rhs))
     ex_lhs = Expr(:tuple, tensor_lhs_sym, tensors_rhs_sym...)
     return :($ex_lhs -> $ex_rhs)
 end
 
 macro peinew_str(s::AbstractString)
-    tensor_lhs_sym, tensors_rhs_sym, ex_rhs_lhs, ex_rhs_rhs = parser(s)
+    tensor_lhs_sym, tensors_rhs_sym, ex_rhs_lhs, ex_rhs_rhs = parser_strmac(s)
     ex_rhs = macroexpand(
         TensorOperations,
         :(TensorOperations.@tensor $ex_rhs_lhs := $ex_rhs_rhs),
@@ -23,7 +21,7 @@ macro peinew_str(s::AbstractString)
     return :($ex_lhs -> $ex_rhs)
 end
 
-function parser(s::AbstractString)
+function parser_strmac(s::AbstractString)
     tensors_rhs = parse_tensors_rhs(s)
     indices_lhs = parse_indices_lhs(s)
     pairs_index = parse_pairs_index(s)
@@ -57,9 +55,60 @@ function parser(s::AbstractString)
     return tensor_lhs_sym, tensors_rhs_sym, ex_rhs_lhs, ex_rhs_rhs
 end
 
+macro peinp!(ex::Expr)
+    ex.head == :string && isodd(length(ex.args)) || error("")
+    s = join(ex.args[1:2:end])
+    tensors_rhs = parse_tensors_rhs(s)
+    indices_lhs = parse_indices_lhs(s)
+    pairs_index = parse_pairs_index(s)
+    tree_contract = parse_tree_contract(s)
+    for ((kind, klab), v) in pairs_index
+        replace!(tensors_rhs[klab].indices, (kind, klab) => v)
+    end
+    indices_all = union([x.indices for x in tensors_rhs]...)
+    indices_sym = Dict(x => gensym() for x in indices_all)
+
+    tensors_rhs_sym = Vector{Symbol}(undef, length(tensors_rhs))
+    tensor_lhs_sym = Ref{Symbol}()
+    for (i, (str, sym)) in enumerate(zip(ex.args[3:2:end], ex.args[2:2:end]))
+        label = match(r"\s*@??\s*(?<label>[0-9>]+)", str)[:label]
+        if label ≠ ">"
+            tensors_rhs_sym[parse(Int, label)] = sym
+        else
+            tensor_lhs_sym[] = sym
+        end
+    end
+
+    tensors_rhs_ex = Vector{Expr}()
+    for (i, a) in enumerate(tensors_rhs)
+        ex = Expr(:ref, esc(tensors_rhs_sym[i]), [indices_sym[i] for i in a.indices]...)
+        ex = a.isconj ? Expr(:call, :conj, ex) : ex
+        push!(tensors_rhs_ex, ex)
+    end
+
+    ex_rhs_lhs = Expr(:ref, esc(tensor_lhs_sym[]), [indices_sym[i] for i in indices_lhs]...)
+    ex_rhs_rhs = if isnothing(tree_contract)
+        Expr(:call, :(*), tensors_rhs_ex...)
+    else
+        evaltree(i, j) = Expr(
+            :call,
+            :(*),
+            i isa Int ? tensors_rhs_ex[i] : evaltree(i...),
+            j isa Int ? tensors_rhs_ex[j] : evaltree(j...),
+        )
+        evaltree(i, j, k...) = evaltree((i, j), k...)
+        evaltree(tree_contract...)
+    end
+
+    ex_rhs =
+        macroexpand(TensorOperations, :(TensorOperations.@tensor $ex_rhs_lhs = $ex_rhs_rhs))
+    return :($ex_rhs)
+end
+
+
 function parse_tensors_rhs(s::AbstractString)
     rhs_matched = collect(eachmatch(
-        r"\[\s*(?<label>[0-9]+)\s*(?<isconj>[\*⋆]??)\s*\|" *
+        r"\[\s*@??\s*(?<label>[0-9]+)\s*(?<isconj>[\*⋆]??)\s*\|" *
         r"(?<index>[,_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}\s]+?)\]",
         s;
         overlap = false,
@@ -83,7 +132,7 @@ end
 
 function parse_indices_lhs(s::AbstractString)
     lhs_matched = collect(eachmatch(
-        r"\[\s*>\s*\|(?<index>[0-9@,_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}\s]+?)\]",
+        r"\[\s*@??\s*>\s*\|(?<index>[0-9@,_\p{Lu}\p{Ll}\p{Lt}\p{Lm}\p{Lo}\p{Nl}\s]+?)\]",
         s;
         overlap = false,
     ))
