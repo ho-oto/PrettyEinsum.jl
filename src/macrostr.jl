@@ -1,4 +1,4 @@
-macro einΣ!_str(s::AbstractString)
+macro Σein!_str(s::AbstractString)
     tensor_lhs_sym, tensors_rhs_sym, ex_rhs_lhs, ex_rhs_rhs = parser_strmac(s)
     ex_rhs =
         macroexpand(TensorOperations, :(TensorOperations.@tensor $ex_rhs_lhs = $ex_rhs_rhs))
@@ -6,7 +6,7 @@ macro einΣ!_str(s::AbstractString)
     return :($ex_lhs -> $ex_rhs)
 end
 
-macro einΣ_str(s::AbstractString)
+macro Σein_str(s::AbstractString)
     tensor_lhs_sym, tensors_rhs_sym, ex_rhs_lhs, ex_rhs_rhs = parser_strmac(s)
     ex_rhs = macroexpand(
         TensorOperations,

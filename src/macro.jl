@@ -1,4 +1,4 @@
-macro einΣ!(ex::Expr)
+macro Σein!(ex::Expr)
     ex.head == :string && isodd(length(ex.args)) || error("")
     s = join(ex.args[1:2:end])
     tensors_rhs = parse_tensors_rhs(s)
@@ -48,7 +48,7 @@ macro einΣ!(ex::Expr)
     return :($ex_rhs)
 end
 
-macro einΣ(ex::Expr)
+macro Σein(ex::Expr)
     ex.head == :string && isodd(length(ex.args)) || error("")
     s = join(ex.args[1:2:end])
     tensors_rhs = parse_tensors_rhs(s)
