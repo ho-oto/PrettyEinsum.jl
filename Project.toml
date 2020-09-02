@@ -7,6 +7,7 @@ version = "0.1.0"
 TensorOperations = "6aa20fa7-93e2-5fca-9bc0-fbd0db3c71a2"
 
 [compat]
+TensorOperations = "3.0"
 julia = "1.5"
 
 [extras]
